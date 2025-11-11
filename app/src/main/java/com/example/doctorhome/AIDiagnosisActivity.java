@@ -7,16 +7,27 @@ import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.example.doctorhome.database.DatabaseHelper;
 import com.example.doctorhome.model.Medicine;
 import com.google.android.material.textfield.TextInputEditText;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
+
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import okhttp3.*;
+
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class AIDiagnosisActivity extends AppCompatActivity {
 
@@ -27,8 +38,11 @@ public class AIDiagnosisActivity extends AppCompatActivity {
     private TextView tvResult;
     private DatabaseHelper dbHelper;
 
+    // ✅ 본인 Gemini API 키
     private static final String GEMINI_API_KEY = "AIzaSyD9of1ffiq3rf4x5d3ycljEm2XxwYs530M";
-    private static final String MODEL_NAME = "gemini-2.0-flash-exp";
+
+    // ✅ 최신 모델명 (Postman에서 정상 응답 확인된 동일 모델)
+    private static final String MODEL_NAME = "gemini-2.5-flash";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,7 +57,6 @@ public class AIDiagnosisActivity extends AppCompatActivity {
         svResult = findViewById(R.id.svResult);
         tvResult = findViewById(R.id.tvResult);
 
-        //진단 버튼 클릭
         btnDiagnose.setOnClickListener(v -> {
             String symptoms = etSymptoms.getText().toString().trim();
 
@@ -52,34 +65,24 @@ public class AIDiagnosisActivity extends AppCompatActivity {
                 return;
             }
 
-            //API 키 확인
-            if (GEMINI_API_KEY.equals("YOUR_GEMINI_API_KEY")) {
-                Toast.makeText(this, "Gemini API 키를 설정하세요", Toast.LENGTH_LONG).show();
-                return;
-            }
-
             diagnose(symptoms);
         });
     }
 
     private void diagnose(String symptoms) {
-        //UI 업데이트
         btnDiagnose.setEnabled(false);
         progressBar.setVisibility(View.VISIBLE);
         svResult.setVisibility(View.GONE);
 
-        //등록된 약 목록 가져오기
         List<Medicine> medicines = dbHelper.getAllMedicines();
         String medicineNames = medicines.stream()
                 .map(Medicine::getName)
                 .collect(Collectors.joining(", "));
 
-        //백그라운드 스레드에서 API 호출
         new Thread(() -> {
             try {
                 String result = callGeminiAPI(symptoms, medicineNames);
 
-                //UI 스레드에서 결과 표시
                 runOnUiThread(() -> {
                     btnDiagnose.setEnabled(true);
                     progressBar.setVisibility(View.GONE);
@@ -88,16 +91,18 @@ public class AIDiagnosisActivity extends AppCompatActivity {
                 });
 
             } catch (Exception e) {
+                e.printStackTrace(); // ✅ 콘솔 로그에 상세 오류 표시
                 runOnUiThread(() -> {
                     btnDiagnose.setEnabled(true);
                     progressBar.setVisibility(View.GONE);
-                    Toast.makeText(this, "오류: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "AI 오류: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 });
             }
         }).start();
     }
 
     private String callGeminiAPI(String symptoms, String medicineNames) throws IOException {
+        // ✅ 최신 엔드포인트
         String apiUrl = String.format(
                 "https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s",
                 MODEL_NAME,
@@ -133,10 +138,15 @@ public class AIDiagnosisActivity extends AppCompatActivity {
             throw new IOException("JSON 생성 실패: " + e.getMessage());
         }
 
-        //HTTP 요청
-        OkHttpClient client = new OkHttpClient();
+        // ✅ 타임아웃 늘린 OkHttpClient (네트워크 지연 대비)
+        OkHttpClient client = new OkHttpClient.Builder()
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(90, TimeUnit.SECONDS)
+                .writeTimeout(90, TimeUnit.SECONDS)
+                .build();
+
         RequestBody body = RequestBody.create(
-                requestBody.toString(),
+                requestBody.toString().getBytes(StandardCharsets.UTF_8),
                 MediaType.parse("application/json")
         );
 
@@ -147,20 +157,23 @@ public class AIDiagnosisActivity extends AppCompatActivity {
 
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
-                throw new IOException("API 요청 실패: " + response.code());
+                throw new IOException("Gemini API 요청 실패 (" + response.code() + ")");
             }
 
             String responseBody = response.body().string();
-            JSONObject jsonResponse = new JSONObject(responseBody);
 
-            //응답 파싱
-            JSONArray candidates = jsonResponse.getJSONArray("candidates");
+            JSONObject jsonResponse = new JSONObject(responseBody);
+            JSONArray candidates = jsonResponse.optJSONArray("candidates");
+            if (candidates == null || candidates.length() == 0) {
+                throw new IOException("AI 응답이 비어 있습니다.");
+            }
+
             JSONObject candidate = candidates.getJSONObject(0);
             JSONObject contentObj = candidate.getJSONObject("content");
-            JSONArray responseParts = contentObj.getJSONArray("parts");
-            JSONObject responsePart = responseParts.getJSONObject(0);
+            JSONArray parts = contentObj.getJSONArray("parts");
+            JSONObject textPart = parts.getJSONObject(0);
 
-            return responsePart.getString("text");
+            return textPart.optString("text", "응답 없음");
 
         } catch (Exception e) {
             throw new IOException("응답 파싱 실패: " + e.getMessage());
