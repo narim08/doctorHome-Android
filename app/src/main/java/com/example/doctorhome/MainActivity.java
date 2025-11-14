@@ -26,39 +26,45 @@ public class MainActivity extends AppCompatActivity {
     private EditText etSearch;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) { //메인 화면
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        dbHelper = new DatabaseHelper(this); //DB 초기화
+        dbHelper = new DatabaseHelper(this);
 
-        //뷰 연결
+        // 뷰 연결
         rvMedicines = findViewById(R.id.rvMedicines);
         tvEmpty = findViewById(R.id.tvEmpty);
         etSearch = findViewById(R.id.etSearch);
         FloatingActionButton fabAdd = findViewById(R.id.fabAdd);
+        FloatingActionButton fabAlarm = findViewById(R.id.fabAlarm);
         Button btnAIDiagnosis = findViewById(R.id.btnAIDiagnosis);
 
-        //갤러리 형식 -> 2열 그리드
+        // 갤러리 형식 -> 2열 그리드
         GridLayoutManager layoutManager = new GridLayoutManager(this, 2);
         rvMedicines.setLayoutManager(layoutManager);
 
         loadMedicines();
 
-
-        //약 추가 버튼
+        // 약 추가 버튼
         fabAdd.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, AddMedicineActivity.class);
             startActivity(intent);
         });
 
-        //AI 진단 버튼
+        // 알림 설정 버튼 (새로 추가)
+        fabAlarm.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, AlarmSettingActivity.class);
+            startActivity(intent);
+        });
+
+        // AI 진단 버튼
         btnAIDiagnosis.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, AIDiagnosisActivity.class);
             startActivity(intent);
         });
 
-        //검색 기능
+        // 검색 기능
         etSearch.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -76,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        loadMedicines(); //화면이 다시 보일 때마다 목록 새로고침
+        loadMedicines();
     }
 
     private void loadMedicines() {
