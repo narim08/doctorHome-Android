@@ -38,11 +38,15 @@ public class AIDiagnosisActivity extends AppCompatActivity {
     private TextView tvResult;
     private DatabaseHelper dbHelper;
 
-    // ✅ 본인 Gemini API 키
     private static final String GEMINI_API_KEY = "AIzaSyD9of1ffiq3rf4x5d3ycljEm2XxwYs530M";
-
-    // ✅ 최신 모델명 (Postman에서 정상 응답 확인된 동일 모델)
     private static final String MODEL_NAME = "gemini-2.5-flash";
+
+    private static final OkHttpClient client = new OkHttpClient.Builder() //싱글톤
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(90, TimeUnit.SECONDS)
+            .writeTimeout(90, TimeUnit.SECONDS)
+            .retryOnConnectionFailure(true)  //연결 실패 시 OkHttp 자동 재시도
+            .build();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,7 +95,7 @@ public class AIDiagnosisActivity extends AppCompatActivity {
                 });
 
             } catch (Exception e) {
-                e.printStackTrace(); // ✅ 콘솔 로그에 상세 오류 표시
+                e.printStackTrace();
                 runOnUiThread(() -> {
                     btnDiagnose.setEnabled(true);
                     progressBar.setVisibility(View.GONE);
@@ -102,13 +106,14 @@ public class AIDiagnosisActivity extends AppCompatActivity {
     }
 
     private String callGeminiAPI(String symptoms, String medicineNames) throws IOException {
-        // ✅ 최신 엔드포인트
+
         String apiUrl = String.format(
                 "https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s",
                 MODEL_NAME,
                 GEMINI_API_KEY
         );
 
+        // 프롬프트 생성
         String prompt;
         if (medicineNames.isEmpty()) {
             prompt = "당신은 의사 또는 약사입니다. 사용자의 증상을 보내드릴테니, 그 증상에 맞는 일반적인 진단, 약, 영양제, 치료법 또는 병원 등을 추천해주세요.\n" +
@@ -122,6 +127,7 @@ public class AIDiagnosisActivity extends AppCompatActivity {
                     "3. 필요하다면 병원 방문을 권장해주세요.";
         }
 
+        // JSON 만들기
         JSONObject requestBody = new JSONObject();
         try {
             JSONArray contents = new JSONArray();
@@ -138,12 +144,6 @@ public class AIDiagnosisActivity extends AppCompatActivity {
             throw new IOException("JSON 생성 실패: " + e.getMessage());
         }
 
-        // ✅ 타임아웃 늘린 OkHttpClient (네트워크 지연 대비)
-        OkHttpClient client = new OkHttpClient.Builder()
-                .connectTimeout(30, TimeUnit.SECONDS)
-                .readTimeout(90, TimeUnit.SECONDS)
-                .writeTimeout(90, TimeUnit.SECONDS)
-                .build();
 
         RequestBody body = RequestBody.create(
                 requestBody.toString().getBytes(StandardCharsets.UTF_8),
@@ -155,28 +155,50 @@ public class AIDiagnosisActivity extends AppCompatActivity {
                 .post(body)
                 .build();
 
-        try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                throw new IOException("Gemini API 요청 실패 (" + response.code() + ")");
+
+        // ---- 503 백오프 재시도 로직 ----
+        int maxRetry = 3;
+        int retryCount = 0;
+
+        while (true) {
+            try (Response response = client.newCall(request).execute()) {
+
+                // 503 처리
+                if (response.code() == 503) {
+                    if (retryCount < maxRetry) {
+                        retryCount++;
+                        Thread.sleep(1000 * retryCount);  // 1초 → 2초 → 3초 대기
+                        continue;
+                    }
+                    throw new IOException("서버 과부하(503). 나중에 다시 시도해주세요.");
+                }
+
+                if (!response.isSuccessful()) {
+                    throw new IOException("Gemini API 요청 실패 (" + response.code() + ")");
+                }
+
+                String responseBody = response.body().string();
+
+                try {
+                    JSONObject jsonResponse = new JSONObject(responseBody);
+                    JSONArray candidates = jsonResponse.optJSONArray("candidates");
+                    if (candidates == null || candidates.length() == 0) {
+                        throw new IOException("AI 응답이 비어 있습니다.");
+                    }
+
+                    JSONObject candidate = candidates.getJSONObject(0);
+                    JSONObject contentObj = candidate.getJSONObject("content");
+                    JSONArray parts = contentObj.getJSONArray("parts");
+                    JSONObject textPart = parts.getJSONObject(0);
+
+                    return textPart.optString("text", "응답 없음");
+
+                } catch (Exception e) {
+                    throw new IOException("응답 파싱 실패: " + e.getMessage());
+                }
+            } catch (InterruptedException e) {
+                throw new IOException("재시도 중 인터럽트 발생");
             }
-
-            String responseBody = response.body().string();
-
-            JSONObject jsonResponse = new JSONObject(responseBody);
-            JSONArray candidates = jsonResponse.optJSONArray("candidates");
-            if (candidates == null || candidates.length() == 0) {
-                throw new IOException("AI 응답이 비어 있습니다.");
-            }
-
-            JSONObject candidate = candidates.getJSONObject(0);
-            JSONObject contentObj = candidate.getJSONObject("content");
-            JSONArray parts = contentObj.getJSONArray("parts");
-            JSONObject textPart = parts.getJSONObject(0);
-
-            return textPart.optString("text", "응답 없음");
-
-        } catch (Exception e) {
-            throw new IOException("응답 파싱 실패: " + e.getMessage());
         }
     }
 }
