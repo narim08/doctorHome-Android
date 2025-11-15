@@ -74,7 +74,15 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="매일"
-                        android:textSize="12sp" />
+                        android:textSize="12sp"
+                        android:paddingEnd="16dp"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="4dp">
 
                     <CheckBox
                         android:id="@+id/cbMonday"
@@ -183,7 +191,7 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- 스케줄 목록 -->
+        <!--스케줄 목록-->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvSchedules"
             android:layout_width="0dp"
@@ -195,16 +203,58 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
-        <!-- 캘린더 -->
-        <CalendarView
+        <!--캘린더 범례-->
+        <LinearLayout
+            android:id="@+id/layoutLegend"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="12dp"
+            android:gravity="center"
+            app:layout_constraintTop_toBottomOf="@id/rvSchedules"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <View
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:background="#87CEEB" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=" 복용 예정"
+                android:textSize="12sp"
+                android:layout_marginEnd="16dp" />
+
+            <View
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:background="#4CAF50" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=" 복용 완료"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <!-- MaterialCalendarView -->
+        <com.prolificinteractive.materialcalendarview.MaterialCalendarView
             android:id="@+id/calendarView"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="8dp"
             android:layout_marginBottom="16dp"
-            app:layout_constraintTop_toBottomOf="@id/rvSchedules"
+            app:mcv_showOtherDates="all"
+            app:mcv_selectionColor="#FF6200EE"
+            app:mcv_headerTextAppearance="@style/CalendarHeader"
+            app:mcv_dateTextAppearance="@style/CalendarDate"
+            app:layout_constraintTop_toBottomOf="@id/layoutLegend"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 

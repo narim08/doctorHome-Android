@@ -3,12 +3,8 @@ package com.example.doctorhome;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
 import android.widget.Button;
-import android.widget.CalendarView;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -18,13 +14,20 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.doctorhome.adapter.ScheduleAdapter;
 import com.example.doctorhome.database.DatabaseHelper;
+import com.example.doctorhome.decorator.CompletedDecorator;
+import com.example.doctorhome.decorator.ScheduledDecorator;
+import com.example.doctorhome.decorator.TodayDecorator;
 import com.example.doctorhome.model.MedicineIntake;
 import com.example.doctorhome.model.MedicineSchedule;
+import com.prolificinteractive.materialcalendarview.CalendarDay;
+import com.prolificinteractive.materialcalendarview.MaterialCalendarView;
+import com.prolificinteractive.materialcalendarview.OnDateSelectedListener;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 
@@ -34,10 +37,13 @@ public class CalendarActivity extends AppCompatActivity {
     private CheckBox cbEveryday, cbMonday, cbTuesday, cbWednesday, cbThursday, cbFriday, cbSaturday, cbSunday;
     private Button btnStartDate, btnEndDate, btnAddSchedule;
     private RecyclerView rvSchedules;
-    private CalendarView calendarView;
+    private MaterialCalendarView calendarView;
     private DatabaseHelper dbHelper;
     private ScheduleAdapter scheduleAdapter;
     private List<MedicineSchedule> scheduleList;
+
+    private ScheduledDecorator scheduledDecorator;
+    private CompletedDecorator completedDecorator;
 
     private String startDate = "";
     private String endDate = "";
@@ -73,6 +79,9 @@ public class CalendarActivity extends AppCompatActivity {
         // RecyclerView 설정
         rvSchedules.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         loadSchedules();
+
+        // 캘린더 설정
+        setupCalendar();
 
         // 매일 체크박스 클릭 시 다른 요일 체크박스 비활성화
         cbEveryday.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -113,10 +122,83 @@ public class CalendarActivity extends AppCompatActivity {
         btnAddSchedule.setOnClickListener(v -> addSchedule());
 
         // 캘린더 날짜 선택
-        calendarView.setOnDateChangeListener((view, year, month, dayOfMonth) -> {
-            String selectedDate = String.format(Locale.getDefault(), "%04d-%02d-%02d", year, month + 1, dayOfMonth);
+        calendarView.setOnDateChangedListener((widget, date, selected) -> {
+            // MaterialCalendarView는 month가 1-12, day는 1-31
+            String selectedDate = String.format(Locale.getDefault(), "%04d-%02d-%02d",
+                    date.getYear(), date.getMonth(), date.getDay());
             showIntakeDialog(selectedDate);
         });
+    }
+
+    private void setupCalendar() {
+        // 데코레이터 초기화
+        scheduledDecorator = new ScheduledDecorator(new HashSet<>());
+        completedDecorator = new CompletedDecorator(new HashSet<>());
+
+        // 데코레이터 추가
+        calendarView.addDecorator(scheduledDecorator);
+        calendarView.addDecorator(completedDecorator);
+        calendarView.addDecorator(new TodayDecorator());
+
+        // 캘린더 업데이트
+        updateCalendarDecorators();
+    }
+
+    private void updateCalendarDecorators() {
+        HashSet<CalendarDay> scheduledDates = new HashSet<>();
+        HashSet<CalendarDay> completedDates = new HashSet<>();
+
+        // 모든 스케줄의 intake 데이터를 확인
+        List<MedicineSchedule> schedules = dbHelper.getAllSchedules();
+
+        try {
+            for (MedicineSchedule schedule : schedules) {
+                Date start = dateFormat.parse(schedule.getStartDate());
+                Date end = dateFormat.parse(schedule.getEndDate());
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(start);
+
+                while (!calendar.getTime().after(end)) {
+                    String currentDate = dateFormat.format(calendar.getTime());
+                    List<MedicineIntake> intakes = dbHelper.getIntakesByDate(currentDate);
+
+                    if (!intakes.isEmpty()) {
+                        // MaterialCalendarView의 CalendarDay는 month가 1-12 (일반적인 월 표현)
+                        CalendarDay calendarDay = CalendarDay.from(
+                                calendar.get(Calendar.YEAR),
+                                calendar.get(Calendar.MONTH) + 1,  // Calendar.MONTH는 0-11이므로 +1
+                                calendar.get(Calendar.DAY_OF_MONTH)
+                        );
+
+                        // 모든 intake가 완료되었는지 확인
+                        boolean allCompleted = true;
+                        for (MedicineIntake intake : intakes) {
+                            if (!intake.isCompleted()) {
+                                allCompleted = false;
+                                break;
+                            }
+                        }
+
+                        if (allCompleted) {
+                            completedDates.add(calendarDay);
+                        } else {
+                            scheduledDates.add(calendarDay);
+                        }
+                    }
+
+                    calendar.add(Calendar.DAY_OF_MONTH, 1);
+                }
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        // 데코레이터 업데이트
+        scheduledDecorator.setDates(scheduledDates);
+        completedDecorator.setDates(completedDates);
+
+        // 캘린더 새로고침
+        calendarView.invalidateDecorators();
     }
 
     private void showDatePicker(boolean isStartDate) {
@@ -190,7 +272,7 @@ public class CalendarActivity extends AppCompatActivity {
             // 해당 기간 동안의 복용 날짜에 대한 Intake 레코드 생성
             createIntakeRecords(scheduleId, daysOfWeek, startDate, endDate);
 
-            Toast.makeText(this, "스케줄이 추가되었습니다", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "스케줄이 추가되었습니다\n캘린더에서 날짜를 클릭하여 복용을 체크하세요", Toast.LENGTH_LONG).show();
 
             // 입력 필드 초기화
             etMedicineName.setText("");
@@ -206,6 +288,7 @@ public class CalendarActivity extends AppCompatActivity {
             btnEndDate.setText("종료일");
 
             loadSchedules();
+            updateCalendarDecorators(); // 캘린더 업데이트
         } else {
             Toast.makeText(this, "스케줄 추가 실패", Toast.LENGTH_SHORT).show();
         }
@@ -275,6 +358,7 @@ public class CalendarActivity extends AppCompatActivity {
                         .setPositiveButton("삭제", (dialog, which) -> {
                             dbHelper.deleteSchedule(schedule.getId());
                             loadSchedules();
+                            updateCalendarDecorators(); // 캘린더 업데이트
                             Toast.makeText(this, "삭제되었습니다", Toast.LENGTH_SHORT).show();
                         })
                         .setNegativeButton("취소", null)
@@ -294,12 +378,23 @@ public class CalendarActivity extends AppCompatActivity {
             return;
         }
 
+        // 현재 복용 상태 확인
+        boolean isAllCompleted = isAllIntakesCompletedForDate(selectedDate);
+        String statusMessage = isAllCompleted ? " ✓ 완료" : " (미완료)";
+
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(selectedDate + " 복용 체크");
+        builder.setTitle(selectedDate + statusMessage);
 
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
         layout.setPadding(50, 40, 50, 10);
+
+        // 상태 표시
+        if (isAllCompleted) {
+            layout.setBackgroundColor(Color.parseColor("#E8F5E9")); // 연한 초록색
+        } else {
+            layout.setBackgroundColor(Color.parseColor("#E3F2FD")); // 연한 파란색
+        }
 
         List<CheckBox> checkBoxes = new ArrayList<>();
 
@@ -314,6 +409,8 @@ public class CalendarActivity extends AppCompatActivity {
                 checkBox.setText(schedule.getMedicineName());
                 checkBox.setChecked(intake.isCompleted());
                 checkBox.setTag(intake);
+                checkBox.setTextSize(16);
+                checkBox.setPadding(10, 10, 10, 10);
                 checkBoxes.add(checkBox);
                 layout.addView(checkBox);
             }
@@ -321,14 +418,47 @@ public class CalendarActivity extends AppCompatActivity {
 
         builder.setView(layout);
         builder.setPositiveButton("저장", (dialog, which) -> {
+            boolean anyChanged = false;
             for (CheckBox checkBox : checkBoxes) {
                 MedicineIntake intake = (MedicineIntake) checkBox.getTag();
-                intake.setCompleted(checkBox.isChecked());
-                dbHelper.updateIntake(intake);
+                boolean newStatus = checkBox.isChecked();
+                if (intake.isCompleted() != newStatus) {
+                    anyChanged = true;
+                    intake.setCompleted(newStatus);
+                    dbHelper.updateIntake(intake);
+                }
             }
-            Toast.makeText(this, "저장되었습니다", Toast.LENGTH_SHORT).show();
+
+            if (anyChanged) {
+                boolean nowCompleted = isAllIntakesCompletedForDate(selectedDate);
+                String message = nowCompleted ?
+                        "저장되었습니다! 모든 약을 복용 완료했습니다 ✓" :
+                        "저장되었습니다";
+                Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+
+                // 캘린더 업데이트
+                updateCalendarDecorators();
+            } else {
+                Toast.makeText(this, "변경사항이 없습니다", Toast.LENGTH_SHORT).show();
+            }
         });
         builder.setNegativeButton("취소", null);
-        builder.show();
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    private boolean isAllIntakesCompletedForDate(String date) {
+        List<MedicineIntake> intakes = dbHelper.getIntakesByDate(date);
+        if (intakes.isEmpty()) {
+            return false;
+        }
+
+        for (MedicineIntake intake : intakes) {
+            if (!intake.isCompleted()) {
+                return false;
+            }
+        }
+        return true;
     }
 }

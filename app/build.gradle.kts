@@ -62,6 +62,8 @@ dependencies {
     implementation ("com.kakao.maps.open:android:2.9.5")
     implementation ("com.google.android.gms:play-services-location:21.0.1")
 
+    implementation("com.github.prolificinteractive:material-calendarview:2.0.1")
+
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
