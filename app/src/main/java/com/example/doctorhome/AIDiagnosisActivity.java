@@ -7,27 +7,23 @@ import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.appcompat.app.AppCompatActivity;
-
 import com.example.doctorhome.database.DatabaseHelper;
 import com.example.doctorhome.model.Medicine;
 import com.google.android.material.textfield.TextInputEditText;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+
 
 public class AIDiagnosisActivity extends AppCompatActivity {
 
@@ -38,7 +34,7 @@ public class AIDiagnosisActivity extends AppCompatActivity {
     private TextView tvResult;
     private DatabaseHelper dbHelper;
 
-    private static final String GEMINI_API_KEY = "AIzaSyD9of1ffiq3rf4x5d3ycljEm2XxwYs530M";
+    private static final String GEMINI_API_KEY = BuildConfig.GEMINI_API_KEY;
     private static final String MODEL_NAME = "gemini-2.5-flash";
 
     private static final OkHttpClient client = new OkHttpClient.Builder() //싱글톤

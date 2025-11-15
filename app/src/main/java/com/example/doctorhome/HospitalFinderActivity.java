@@ -48,8 +48,8 @@ public class HospitalFinderActivity extends AppCompatActivity implements Hospita
 
     private static final String TAG = "HospitalFinder";
 
-    private static final String KAKAO_NATIVE_APP_KEY = "fcbf62498963e6b1e2697b0516383d57";
-    private static final String KAKAO_REST_API_KEY = "89ff82c63f4198bfc578b950542f3bd9";
+    private static final String KAKAO_NATIVE_APP_KEY = BuildConfig.KAKAO_NATIVE_APP_KEY;;
+    private static final String KAKAO_REST_API_KEY = BuildConfig.KAKAO_REST_API_KEY;
 
     private MapView mapView;
     private KakaoMap kakaoMap;

@@ -65,10 +65,6 @@
             android:enabled="true"
             android:exported="false" />
 
-        <meta-data
-            android:name="com.kakao.sdk.AppKey"
-            android:value="fcbf62498963e6b1e2697b0516383d57" />
-
     </application>
 
 </manifest>
