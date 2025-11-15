@@ -60,6 +60,10 @@
             android:name=".HospitalFinderActivity"
             android:parentActivityName=".MainActivity" />
 
+        <activity
+            android:name=".CalendarActivity"
+            android:parentActivityName=".MainActivity" />
+
         <receiver
             android:name=".AlarmReceiver"
             android:enabled="true"
