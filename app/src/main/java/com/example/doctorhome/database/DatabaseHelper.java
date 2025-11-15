@@ -7,14 +7,16 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import com.example.doctorhome.model.Medicine;
 import com.example.doctorhome.model.MedicineAlarm;
+import com.example.doctorhome.model.MedicineSchedule;
+import com.example.doctorhome.model.MedicineIntake;
 import java.util.ArrayList;
 import java.util.List;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "DoctorHome.db";
-    private static final int DATABASE_VERSION = 2; //버전 업그레이드
+    private static final int DATABASE_VERSION = 3; // 버전 업그레이드
 
-    //Medicine 테이블
+    // Medicine 테이블
     private static final String TABLE_MEDICINE = "medicine";
     private static final String COL_ID = "id";
     private static final String COL_NAME = "name";
@@ -23,7 +25,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_MEDICINE_USAGE = "medicine_usage";
     private static final String COL_IMAGE_URL = "image_url";
 
-    //Alarm 테이블
+    // Alarm 테이블
     private static final String TABLE_ALARM = "medicine_alarm";
     private static final String COL_ALARM_ID = "id";
     private static final String COL_ALARM_MEDICINE_NAME = "medicine_name";
@@ -31,13 +33,28 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_ALARM_TIME = "time";
     private static final String COL_ALARM_IS_ACTIVE = "is_active";
 
+    // Schedule 테이블
+    private static final String TABLE_SCHEDULE = "medicine_schedule";
+    private static final String COL_SCHEDULE_ID = "id";
+    private static final String COL_SCHEDULE_MEDICINE_NAME = "medicine_name";
+    private static final String COL_SCHEDULE_DAYS_OF_WEEK = "days_of_week";
+    private static final String COL_SCHEDULE_START_DATE = "start_date";
+    private static final String COL_SCHEDULE_END_DATE = "end_date";
+
+    // Intake 테이블
+    private static final String TABLE_INTAKE = "medicine_intake";
+    private static final String COL_INTAKE_ID = "id";
+    private static final String COL_INTAKE_SCHEDULE_ID = "schedule_id";
+    private static final String COL_INTAKE_DATE = "date";
+    private static final String COL_INTAKE_COMPLETED = "completed";
+
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        //Medicine 테이블 생성
+        // Medicine 테이블 생성
         String CREATE_MEDICINE_TABLE = "CREATE TABLE " + TABLE_MEDICINE + " ("
                 + COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + COL_NAME + " TEXT NOT NULL, "
@@ -48,7 +65,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + ")";
         db.execSQL(CREATE_MEDICINE_TABLE);
 
-        //Alarm 테이블 생성
+        // Alarm 테이블 생성
         String CREATE_ALARM_TABLE = "CREATE TABLE " + TABLE_ALARM + " ("
                 + COL_ALARM_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + COL_ALARM_MEDICINE_NAME + " TEXT NOT NULL, "
@@ -57,12 +74,33 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_ALARM_IS_ACTIVE + " INTEGER DEFAULT 1"
                 + ")";
         db.execSQL(CREATE_ALARM_TABLE);
+
+        // Schedule 테이블 생성
+        String CREATE_SCHEDULE_TABLE = "CREATE TABLE " + TABLE_SCHEDULE + " ("
+                + COL_SCHEDULE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + COL_SCHEDULE_MEDICINE_NAME + " TEXT NOT NULL, "
+                + COL_SCHEDULE_DAYS_OF_WEEK + " TEXT NOT NULL, "
+                + COL_SCHEDULE_START_DATE + " TEXT NOT NULL, "
+                + COL_SCHEDULE_END_DATE + " TEXT NOT NULL"
+                + ")";
+        db.execSQL(CREATE_SCHEDULE_TABLE);
+
+        // Intake 테이블 생성
+        String CREATE_INTAKE_TABLE = "CREATE TABLE " + TABLE_INTAKE + " ("
+                + COL_INTAKE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + COL_INTAKE_SCHEDULE_ID + " INTEGER NOT NULL, "
+                + COL_INTAKE_DATE + " TEXT NOT NULL, "
+                + COL_INTAKE_COMPLETED + " INTEGER DEFAULT 0, "
+                + "FOREIGN KEY(" + COL_INTAKE_SCHEDULE_ID + ") REFERENCES "
+                + TABLE_SCHEDULE + "(" + COL_SCHEDULE_ID + ")"
+                + ")";
+        db.execSQL(CREATE_INTAKE_TABLE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         if (oldVersion < 2) {
-            //Alarm 테이블 추가
+            // Alarm 테이블 추가
             String CREATE_ALARM_TABLE = "CREATE TABLE IF NOT EXISTS " + TABLE_ALARM + " ("
                     + COL_ALARM_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                     + COL_ALARM_MEDICINE_NAME + " TEXT NOT NULL, "
@@ -71,6 +109,26 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     + COL_ALARM_IS_ACTIVE + " INTEGER DEFAULT 1"
                     + ")";
             db.execSQL(CREATE_ALARM_TABLE);
+        }
+        if (oldVersion < 3) {
+            // Schedule 테이블 추가
+            String CREATE_SCHEDULE_TABLE = "CREATE TABLE IF NOT EXISTS " + TABLE_SCHEDULE + " ("
+                    + COL_SCHEDULE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                    + COL_SCHEDULE_MEDICINE_NAME + " TEXT NOT NULL, "
+                    + COL_SCHEDULE_DAYS_OF_WEEK + " TEXT NOT NULL, "
+                    + COL_SCHEDULE_START_DATE + " TEXT NOT NULL, "
+                    + COL_SCHEDULE_END_DATE + " TEXT NOT NULL"
+                    + ")";
+            db.execSQL(CREATE_SCHEDULE_TABLE);
+
+            // Intake 테이블 추가
+            String CREATE_INTAKE_TABLE = "CREATE TABLE IF NOT EXISTS " + TABLE_INTAKE + " ("
+                    + COL_INTAKE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                    + COL_INTAKE_SCHEDULE_ID + " INTEGER NOT NULL, "
+                    + COL_INTAKE_DATE + " TEXT NOT NULL, "
+                    + COL_INTAKE_COMPLETED + " INTEGER DEFAULT 0"
+                    + ")";
+            db.execSQL(CREATE_INTAKE_TABLE);
         }
     }
 
@@ -265,5 +323,123 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_ALARM, COL_ALARM_ID + "=?", new String[]{String.valueOf(id)});
         db.close();
+    }
+
+    /* Schedule CRUD */
+    public long addSchedule(MedicineSchedule schedule) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+
+        values.put(COL_SCHEDULE_MEDICINE_NAME, schedule.getMedicineName());
+        values.put(COL_SCHEDULE_DAYS_OF_WEEK, schedule.getDaysOfWeek());
+        values.put(COL_SCHEDULE_START_DATE, schedule.getStartDate());
+        values.put(COL_SCHEDULE_END_DATE, schedule.getEndDate());
+
+        long id = db.insert(TABLE_SCHEDULE, null, values);
+        db.close();
+        return id;
+    }
+
+    public List<MedicineSchedule> getAllSchedules() {
+        List<MedicineSchedule> scheduleList = new ArrayList<>();
+        String selectQuery = "SELECT * FROM " + TABLE_SCHEDULE + " ORDER BY " + COL_SCHEDULE_START_DATE;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                MedicineSchedule schedule = new MedicineSchedule();
+                schedule.setId(cursor.getLong(cursor.getColumnIndexOrThrow(COL_SCHEDULE_ID)));
+                schedule.setMedicineName(cursor.getString(cursor.getColumnIndexOrThrow(COL_SCHEDULE_MEDICINE_NAME)));
+                schedule.setDaysOfWeek(cursor.getString(cursor.getColumnIndexOrThrow(COL_SCHEDULE_DAYS_OF_WEEK)));
+                schedule.setStartDate(cursor.getString(cursor.getColumnIndexOrThrow(COL_SCHEDULE_START_DATE)));
+                schedule.setEndDate(cursor.getString(cursor.getColumnIndexOrThrow(COL_SCHEDULE_END_DATE)));
+
+                scheduleList.add(schedule);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        db.close();
+        return scheduleList;
+    }
+
+    public void deleteSchedule(long id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        // 스케줄 삭제 시 관련 복용 기록도 함께 삭제
+        db.delete(TABLE_INTAKE, COL_INTAKE_SCHEDULE_ID + "=?", new String[]{String.valueOf(id)});
+        db.delete(TABLE_SCHEDULE, COL_SCHEDULE_ID + "=?", new String[]{String.valueOf(id)});
+        db.close();
+    }
+
+    /* Intake CRUD */
+    public long addIntake(MedicineIntake intake) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+
+        values.put(COL_INTAKE_SCHEDULE_ID, intake.getScheduleId());
+        values.put(COL_INTAKE_DATE, intake.getDate());
+        values.put(COL_INTAKE_COMPLETED, intake.isCompleted() ? 1 : 0);
+
+        long id = db.insert(TABLE_INTAKE, null, values);
+        db.close();
+        return id;
+    }
+
+    public List<MedicineIntake> getIntakesByDate(String date) {
+        List<MedicineIntake> intakeList = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = db.query(TABLE_INTAKE, null, COL_INTAKE_DATE + "=?",
+                new String[]{date}, null, null, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                MedicineIntake intake = new MedicineIntake();
+                intake.setId(cursor.getLong(cursor.getColumnIndexOrThrow(COL_INTAKE_ID)));
+                intake.setScheduleId(cursor.getLong(cursor.getColumnIndexOrThrow(COL_INTAKE_SCHEDULE_ID)));
+                intake.setDate(cursor.getString(cursor.getColumnIndexOrThrow(COL_INTAKE_DATE)));
+                intake.setCompleted(cursor.getInt(cursor.getColumnIndexOrThrow(COL_INTAKE_COMPLETED)) == 1);
+
+                intakeList.add(intake);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        db.close();
+        return intakeList;
+    }
+
+    public int updateIntake(MedicineIntake intake) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+
+        values.put(COL_INTAKE_COMPLETED, intake.isCompleted() ? 1 : 0);
+
+        int rowsAffected = db.update(TABLE_INTAKE, values, COL_INTAKE_ID + "=?",
+                new String[]{String.valueOf(intake.getId())});
+        db.close();
+        return rowsAffected;
+    }
+
+    public MedicineIntake getIntakeByScheduleAndDate(long scheduleId, String date) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(TABLE_INTAKE, null,
+                COL_INTAKE_SCHEDULE_ID + "=? AND " + COL_INTAKE_DATE + "=?",
+                new String[]{String.valueOf(scheduleId), date}, null, null, null);
+
+        MedicineIntake intake = null;
+        if (cursor != null && cursor.moveToFirst()) {
+            intake = new MedicineIntake();
+            intake.setId(cursor.getLong(cursor.getColumnIndexOrThrow(COL_INTAKE_ID)));
+            intake.setScheduleId(cursor.getLong(cursor.getColumnIndexOrThrow(COL_INTAKE_SCHEDULE_ID)));
+            intake.setDate(cursor.getString(cursor.getColumnIndexOrThrow(COL_INTAKE_DATE)));
+            intake.setCompleted(cursor.getInt(cursor.getColumnIndexOrThrow(COL_INTAKE_COMPLETED)) == 1);
+            cursor.close();
+        }
+
+        db.close();
+        return intake;
     }
 }
