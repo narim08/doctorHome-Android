@@ -6,7 +6,7 @@ public class Hospital {
     private String phone;
     private double latitude;
     private double longitude;
-    private String type; // "병원" 또는 "약국"
+    private String type; //병원 또는 약국
 
     public Hospital() {
     }

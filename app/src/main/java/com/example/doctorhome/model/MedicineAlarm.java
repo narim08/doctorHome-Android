@@ -5,8 +5,8 @@ import java.io.Serializable;
 public class MedicineAlarm implements Serializable {
     private long id;
     private String medicineName;
-    private String usage; //복용법
-    private String time; //알림 시간(HH:mm 형식)
+    private String usage;
+    private String time;
     private boolean isActive; //알림 활성화 여부
 
     public MedicineAlarm() {

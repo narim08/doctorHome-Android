@@ -5,7 +5,6 @@
     android:orientation="vertical"
     android:background="#F5F5F5">
 
-    <!-- 상단 제목 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -33,7 +32,6 @@
             android:layout_marginTop="8dp" />
     </LinearLayout>
 
-    <!-- 검색 옵션 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -62,14 +60,12 @@
             android:backgroundTint="#4CAF50" />
     </LinearLayout>
 
-    <!-- 지도 뷰 -->
     <com.kakao.vectormap.MapView
         android:id="@+id/mapView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1" />
 
-    <!-- 병원/약국 목록 -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvHospitals"
         android:layout_width="match_parent"

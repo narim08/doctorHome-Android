@@ -83,6 +83,17 @@
         android:contentDescription="전화 걸기"
         android:backgroundTint="#8ED191"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/fabMessage" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabMessage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="24dp"
+        android:src="@android:drawable/sym_action_chat"
+        android:contentDescription="메시지 보내기"
+        android:backgroundTint="#FFC46C"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/fabCalendar" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton

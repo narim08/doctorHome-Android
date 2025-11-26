@@ -14,9 +14,9 @@ import java.util.List;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "DoctorHome.db";
-    private static final int DATABASE_VERSION = 3; // 버전 업그레이드
+    private static final int DATABASE_VERSION = 3; //버전 업그레이드
 
-    // Medicine 테이블
+    //Medicine 테이블
     private static final String TABLE_MEDICINE = "medicine";
     private static final String COL_ID = "id";
     private static final String COL_NAME = "name";
@@ -25,7 +25,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_MEDICINE_USAGE = "medicine_usage";
     private static final String COL_IMAGE_URL = "image_url";
 
-    // Alarm 테이블
+    //Alarm 테이블
     private static final String TABLE_ALARM = "medicine_alarm";
     private static final String COL_ALARM_ID = "id";
     private static final String COL_ALARM_MEDICINE_NAME = "medicine_name";
@@ -33,7 +33,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_ALARM_TIME = "time";
     private static final String COL_ALARM_IS_ACTIVE = "is_active";
 
-    // Schedule 테이블
+    //Schedule 테이블
     private static final String TABLE_SCHEDULE = "medicine_schedule";
     private static final String COL_SCHEDULE_ID = "id";
     private static final String COL_SCHEDULE_MEDICINE_NAME = "medicine_name";
@@ -41,7 +41,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_SCHEDULE_START_DATE = "start_date";
     private static final String COL_SCHEDULE_END_DATE = "end_date";
 
-    // Intake 테이블
+    //Intake 테이블
     private static final String TABLE_INTAKE = "medicine_intake";
     private static final String COL_INTAKE_ID = "id";
     private static final String COL_INTAKE_SCHEDULE_ID = "schedule_id";
@@ -54,7 +54,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        // Medicine 테이블 생성
         String CREATE_MEDICINE_TABLE = "CREATE TABLE " + TABLE_MEDICINE + " ("
                 + COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + COL_NAME + " TEXT NOT NULL, "
@@ -65,7 +64,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + ")";
         db.execSQL(CREATE_MEDICINE_TABLE);
 
-        // Alarm 테이블 생성
         String CREATE_ALARM_TABLE = "CREATE TABLE " + TABLE_ALARM + " ("
                 + COL_ALARM_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + COL_ALARM_MEDICINE_NAME + " TEXT NOT NULL, "
@@ -75,7 +73,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + ")";
         db.execSQL(CREATE_ALARM_TABLE);
 
-        // Schedule 테이블 생성
         String CREATE_SCHEDULE_TABLE = "CREATE TABLE " + TABLE_SCHEDULE + " ("
                 + COL_SCHEDULE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + COL_SCHEDULE_MEDICINE_NAME + " TEXT NOT NULL, "
@@ -85,7 +82,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + ")";
         db.execSQL(CREATE_SCHEDULE_TABLE);
 
-        // Intake 테이블 생성
         String CREATE_INTAKE_TABLE = "CREATE TABLE " + TABLE_INTAKE + " ("
                 + COL_INTAKE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + COL_INTAKE_SCHEDULE_ID + " INTEGER NOT NULL, "
@@ -100,7 +96,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         if (oldVersion < 2) {
-            // Alarm 테이블 추가
             String CREATE_ALARM_TABLE = "CREATE TABLE IF NOT EXISTS " + TABLE_ALARM + " ("
                     + COL_ALARM_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                     + COL_ALARM_MEDICINE_NAME + " TEXT NOT NULL, "
@@ -111,7 +106,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             db.execSQL(CREATE_ALARM_TABLE);
         }
         if (oldVersion < 3) {
-            // Schedule 테이블 추가
             String CREATE_SCHEDULE_TABLE = "CREATE TABLE IF NOT EXISTS " + TABLE_SCHEDULE + " ("
                     + COL_SCHEDULE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                     + COL_SCHEDULE_MEDICINE_NAME + " TEXT NOT NULL, "
@@ -121,7 +115,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     + ")";
             db.execSQL(CREATE_SCHEDULE_TABLE);
 
-            // Intake 테이블 추가
             String CREATE_INTAKE_TABLE = "CREATE TABLE IF NOT EXISTS " + TABLE_INTAKE + " ("
                     + COL_INTAKE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                     + COL_INTAKE_SCHEDULE_ID + " INTEGER NOT NULL, "
@@ -367,7 +360,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public void deleteSchedule(long id) {
         SQLiteDatabase db = this.getWritableDatabase();
-        // 스케줄 삭제 시 관련 복용 기록도 함께 삭제
+        //스케줄 삭제 시 관련 복용 기록도 함께 삭제
         db.delete(TABLE_INTAKE, COL_INTAKE_SCHEDULE_ID + "=?", new String[]{String.valueOf(id)});
         db.delete(TABLE_SCHEDULE, COL_SCHEDULE_ID + "=?", new String[]{String.valueOf(id)});
         db.close();
