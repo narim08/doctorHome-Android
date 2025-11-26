@@ -1,6 +1,7 @@
 package com.example.doctorhome;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -39,46 +40,54 @@ public class MainActivity extends AppCompatActivity {
         FloatingActionButton fabAdd = findViewById(R.id.fabAdd);
         FloatingActionButton fabAlarm = findViewById(R.id.fabAlarm);
         FloatingActionButton fabCalendar = findViewById(R.id.fabCalendar);
+        FloatingActionButton fabCall = findViewById(R.id.fabCall);
         Button btnAIDiagnosis = findViewById(R.id.btnAIDiagnosis);
         Button btnFindHospital = findViewById(R.id.btnFindHospital);
 
-        // 갤러리 형식 -> 2열 그리드
+        //갤러리 형식 -> 2열 그리드
         GridLayoutManager layoutManager = new GridLayoutManager(this, 2);
         rvMedicines.setLayoutManager(layoutManager);
 
         loadMedicines();
 
-        // 약 추가 버튼
+        //약 추가 버튼
         fabAdd.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, AddMedicineActivity.class);
             startActivity(intent);
         });
 
-        // 알림 설정 버튼
+        //알림 설정 버튼
         fabAlarm.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, AlarmSettingActivity.class);
             startActivity(intent);
         });
 
-        // 캘린더 버튼
+        //캘린더 버튼
         fabCalendar.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, CalendarActivity.class);
             startActivity(intent);
         });
 
-        // AI 진단 버튼
+        //전화 걸기 버튼
+        fabCall.setOnClickListener(v -> {
+            Uri uri = Uri.parse("tel:119");
+            Intent intent = new Intent(Intent.ACTION_DIAL, uri); //암시적 인텐트
+            startActivity(intent);
+        });
+
+        //AI 진단 버튼
         btnAIDiagnosis.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, AIDiagnosisActivity.class);
             startActivity(intent);
         });
 
-        // 병원 찾기 버튼
+        //병원 찾기 버튼
         btnFindHospital.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, HospitalFinderActivity.class);
             startActivity(intent);
         });
 
-        // 검색 기능
+        //검색 기능
         etSearch.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
