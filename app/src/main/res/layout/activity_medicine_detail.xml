@@ -99,7 +99,6 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
-            <!--수정-->
             <Button
                 android:id="@+id/btnUpdate"
                 android:layout_width="0dp"
@@ -110,7 +109,6 @@
                 android:textSize="16sp"
                 android:backgroundTint="#2196F3" />
 
-            <!--삭제-->
             <Button
                 android:id="@+id/btnDelete"
                 android:layout_width="0dp"

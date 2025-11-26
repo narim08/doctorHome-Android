@@ -25,7 +25,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
-        <!-- 약 추가 영역 -->
         <androidx.cardview.widget.CardView
             android:id="@+id/cardAddSchedule"
             android:layout_width="0dp"
@@ -53,7 +52,6 @@
                     android:padding="12dp"
                     android:background="@android:drawable/editbox_background" />
 
-                <!-- 요일 선택 -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -134,7 +132,6 @@
                         android:textSize="12sp" />
                 </LinearLayout>
 
-                <!-- 기간 선택 -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -191,7 +188,6 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!--스케줄 목록-->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvSchedules"
             android:layout_width="0dp"
@@ -203,7 +199,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
-        <!--캘린더 범례-->
         <LinearLayout
             android:id="@+id/layoutLegend"
             android:layout_width="0dp"
@@ -241,7 +236,6 @@
                 android:textSize="12sp" />
         </LinearLayout>
 
-        <!-- MaterialCalendarView -->
         <com.prolificinteractive.materialcalendarview.MaterialCalendarView
             android:id="@+id/calendarView"
             android:layout_width="0dp"

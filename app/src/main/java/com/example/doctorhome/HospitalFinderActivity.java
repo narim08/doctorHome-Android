@@ -162,8 +162,6 @@ public class HospitalFinderActivity extends AppCompatActivity implements Hospita
     }
 
     private boolean isInKorea(double lat, double lng) {
-        //위도: 33° ~ 43° (제주도 포함)
-        //경도: 124° ~ 132°
         return lat >= 33.0 && lat <= 43.0 && lng >= 124.0 && lng <= 132.0;
     }
 

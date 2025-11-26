@@ -42,7 +42,7 @@ public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.Medici
         holder.tvExpiryDate.setText("유통기한: " + medicine.getExpiryDate());
         holder.tvQuantity.setText("남은 개수: " + medicine.getQuantity() + "개");
 
-        // 이미지 로드
+        //이미지 로드
         String imageUrl = medicine.getImageUrl();
         if (imageUrl != null && !imageUrl.isEmpty()) {
             Glide.with(context)
@@ -52,12 +52,11 @@ public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.Medici
                     .diskCacheStrategy(DiskCacheStrategy.ALL) //캐싱
                     .centerCrop()
                     .into(holder.ivMedicine);
-        } else {
-            // 이미지 URL이 없으면 기본 이미지
+        } else { //이미지 URL이 없으면 기본 이미지
             holder.ivMedicine.setImageResource(android.R.drawable.ic_menu_gallery);
         }
 
-        // 카드 클릭 시 상세 화면으로 이동
+        //카드 클릭 시 상세 화면으로 이동
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, MedicineDetailActivity.class);
             intent.putExtra("medicine", medicine);
@@ -70,7 +69,6 @@ public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.Medici
         return medicineList.size();
     }
 
-    // 데이터 업데이트 메서드
     public void updateData(List<Medicine> newList) {
         this.medicineList = newList;
         notifyDataSetChanged();

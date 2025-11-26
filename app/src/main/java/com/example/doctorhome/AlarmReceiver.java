@@ -19,7 +19,6 @@ public class AlarmReceiver extends BroadcastReceiver {
         String usage = intent.getStringExtra("usage");
         long alarmId = intent.getLongExtra("alarm_id", -1);
 
-        //알림 채널 생성 (Android 8.0 이상)
         createNotificationChannel(context);
 
         //알림 클릭 시 메인 화면으로 이동

@@ -37,7 +37,6 @@ public class AlarmSettingActivity extends AppCompatActivity implements AlarmAdap
     private String selectedTime = "";
     private MedicineAlarm editingAlarm = null;
 
-    // 알림 권한 요청 (Android 13 이상)
     private final ActivityResultLauncher<String> requestPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
                 if (isGranted) {
@@ -51,11 +50,8 @@ public class AlarmSettingActivity extends AppCompatActivity implements AlarmAdap
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_alarm_setting);
-
-        // 알림 권한 확인 및 요청
         checkNotificationPermission();
 
-        // 뷰 초기화
         etMedicineName = findViewById(R.id.etMedicineName);
         etUsage = findViewById(R.id.etUsage);
         tvSelectedTime = findViewById(R.id.tvSelectedTime);
@@ -64,22 +60,18 @@ public class AlarmSettingActivity extends AppCompatActivity implements AlarmAdap
         btnSetAlarm = findViewById(R.id.btnSetAlarm);
         rvAlarms = findViewById(R.id.rvAlarms);
 
-        // DB 초기화
         dbHelper = new DatabaseHelper(this);
 
-        // 리사이클러뷰 설정
         rvAlarms.setLayoutManager(new LinearLayoutManager(this));
         loadAlarms();
 
-        // 시간 선택 버튼
         btnSelectTime.setOnClickListener(v -> showTimePickerDialog());
 
-        // 알림 설정 버튼
         btnSetAlarm.setOnClickListener(v -> saveAlarm());
     }
 
     private void checkNotificationPermission() {
-        // Android 13 (API 33) 이상에서만 런타임 권한 필요
+        //Android 13 (API 33) 이상에서만 런타임 권한 필요
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
                     != PackageManager.PERMISSION_GRANTED) {
@@ -110,25 +102,21 @@ public class AlarmSettingActivity extends AppCompatActivity implements AlarmAdap
         String medicineName = etMedicineName.getText().toString().trim();
         String usage = etUsage.getText().toString().trim();
 
-        // 유효성 검사
         if (medicineName.isEmpty()) {
             Toast.makeText(this, "약 이름을 입력해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
-
         if (usage.isEmpty()) {
             Toast.makeText(this, "복용법을 입력해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
-
         if (selectedTime.isEmpty()) {
             Toast.makeText(this, "시간을 선택해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
         MedicineAlarm alarm;
-        if (editingAlarm != null) {
-            // 수정 모드
+        if (editingAlarm != null) { //수정 모드
             alarm = editingAlarm;
             alarm.setMedicineName(medicineName);
             alarm.setUsage(usage);
@@ -141,8 +129,7 @@ public class AlarmSettingActivity extends AppCompatActivity implements AlarmAdap
             Toast.makeText(this, "알림이 수정되었습니다", Toast.LENGTH_SHORT).show();
             editingAlarm = null;
             btnSetAlarm.setText("알림 받기");
-        } else {
-            // 추가 모드
+        } else { //추가 모드
             alarm = new MedicineAlarm();
             alarm.setMedicineName(medicineName);
             alarm.setUsage(usage);

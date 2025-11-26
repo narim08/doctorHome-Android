@@ -44,7 +44,6 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.AlarmViewHol
         holder.tvTime.setText(alarm.getTime());
         holder.tvUsage.setText(alarm.getUsage());
 
-        //삭제 버튼 클릭
         holder.btnDelete.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onDeleteClick(alarm);

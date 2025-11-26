@@ -106,7 +106,6 @@
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
-    <!--등록된 알림 목록-->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

@@ -8,7 +8,7 @@ import com.example.doctorhome.database.DatabaseHelper;
 import com.example.doctorhome.model.Medicine;
 import com.google.android.material.textfield.TextInputEditText;
 
-public class AddMedicineActivity extends AppCompatActivity { //약 추가 화면
+public class AddMedicineActivity extends AppCompatActivity {
 
     private TextInputEditText etName, etExpiryDate, etQuantity, etUsage, etImageUrl;
     private DatabaseHelper dbHelper;
@@ -27,7 +27,7 @@ public class AddMedicineActivity extends AppCompatActivity { //약 추가 화면
         etImageUrl = findViewById(R.id.etImageUrl);
         Button btnSave = findViewById(R.id.btnSave);
 
-        btnSave.setOnClickListener(v -> saveMedicine()); //저장 버튼
+        btnSave.setOnClickListener(v -> saveMedicine());
     }
 
     private void saveMedicine() {

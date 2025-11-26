@@ -109,7 +109,6 @@ public class AIDiagnosisActivity extends AppCompatActivity {
                 GEMINI_API_KEY
         );
 
-        // 프롬프트 생성
         String prompt;
         if (medicineNames.isEmpty()) {
             prompt = "당신은 의사 또는 약사입니다. 사용자의 증상을 보내드릴테니, 그 증상에 맞는 일반적인 진단, 약, 영양제, 치료법 또는 병원 등을 추천해주세요.\n" +
@@ -123,7 +122,6 @@ public class AIDiagnosisActivity extends AppCompatActivity {
                     "3. 필요하다면 병원 방문을 권장해주세요.";
         }
 
-        // JSON 만들기
         JSONObject requestBody = new JSONObject();
         try {
             JSONArray contents = new JSONArray();
@@ -152,14 +150,12 @@ public class AIDiagnosisActivity extends AppCompatActivity {
                 .build();
 
 
-        // ---- 503 백오프 재시도 로직 ----
+        //503 백오프 재시도
         int maxRetry = 3;
         int retryCount = 0;
 
         while (true) {
             try (Response response = client.newCall(request).execute()) {
-
-                // 503 처리
                 if (response.code() == 503) {
                     if (retryCount < maxRetry) {
                         retryCount++;

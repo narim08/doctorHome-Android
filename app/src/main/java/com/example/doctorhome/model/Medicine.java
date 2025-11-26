@@ -4,11 +4,11 @@ import java.io.Serializable;
 
 public class Medicine implements Serializable {
     private long id;
-    private String name; //약 이름
-    private String expiryDate; //유통기한
-    private int quantity; //남은 개수
-    private String medicineUsage; //복용법
-    private String imageUrl; //약 이미지 링크
+    private String name;
+    private String expiryDate;
+    private int quantity;
+    private String medicineUsage;
+    private String imageUrl;
 
     public Medicine () {
 
