@@ -19,7 +19,7 @@
 
 ## 실행 화면
 
-- 실행 영상 (youtube)
+- 실행 영상 (youtube) <br>
 [![DoctorHome Demo](https://img.youtube.com/vi/cyBPEnx-yZQ/0.jpg)](https://www.youtube.com/shorts/cyBPEnx-yZQ)
 
 - 메인 화면(보유 약 CRUD) / 긴급 메시지
