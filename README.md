@@ -19,8 +19,7 @@
 
 ## 실행 화면
 
-[https://www.youtube.com/shorts/cyBPEnx-yZQ
-](url)
+[![DoctorHome Demo](https://img.youtube.com/vi/cyBPEnx-yZQ/0.jpg)](https://www.youtube.com/shorts/cyBPEnx-yZQ)
 
 - 메인 화면(보유 약 CRUD) / 긴급 메시지
 ![1](https://github.com/user-attachments/assets/973d6921-0ab4-4350-8d7b-9f85b1af56fd)
